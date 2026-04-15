@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <section class="hero">
+        {% if user.is_authenticated %}
+            <h1>Üdvözöljük újra, {{ user.username }}!</h1>
+            <p>Böngésszen legfrissebb ajánlataink között.</p>
+        {% else %}
+            <h1>Üdvözöljük a HomeLak oldalán!</h1>
+            <p>Találja meg álmai otthonát nálunk egyszerűen és gyorsan.</p>
+        {% endif %}
+    </section>
+{% endblock %}

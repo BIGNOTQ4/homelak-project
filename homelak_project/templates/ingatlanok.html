@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<main class="content-wrapper">
+    <div class="section-title-row section-title-space-between">
+        <h1 class="section-title">Elérhető ingatlanok</h1>
+        {% if user.is_authenticated %}
+            <a href="{% url 'create_property' %}" class="secondary-btn compact-btn">+ Hirdetés feladása</a>
+        {% endif %}
+    </div>
+
+    <section class="search-container">
+        <form method="get" class="search-bar">
+            <div class="search-input">
+                <label for="location">Település</label>
+                <input type="text" id="location" name="location" placeholder="Pl. Budapest" value="{{ filters.location }}">
+            </div>
+
+            <div class="search-input">
+                <label for="min_price">Minimum ár</label>
+                <input type="number" id="min_price" name="min_price" min="0" placeholder="Pl. 30000000" value="{{ filters.min_price }}">
+            </div>
+
+            <div class="search-input">
+                <label for="max_price">Maximum ár</label>
+                <input type="number" id="max_price" name="max_price" min="0" placeholder="Pl. 80000000" value="{{ filters.max_price }}">
+            </div>
+
+            <div class="search-input">
+                <label for="min_rooms">Minimum szobaszám</label>
+                <input type="number" id="min_rooms" name="min_rooms" min="0" placeholder="Pl. 3" value="{{ filters.min_rooms }}">
+            </div>
+
+            <div class="search-input">
+                <label for="sort">Rendezés</label>
+                <select id="sort" name="sort">
+                    <option value="newest" {% if filters.sort == 'newest' %}selected{% endif %}>Legújabbak elöl</option>
+                    <option value="price_asc" {% if filters.sort == 'price_asc' %}selected{% endif %}>Ár szerint növekvő</option>
+                    <option value="price_desc" {% if filters.sort == 'price_desc' %}selected{% endif %}>Ár szerint csökkenő</option>
+                    <option value="rooms_desc" {% if filters.sort == 'rooms_desc' %}selected{% endif %}>Több szoba elöl</option>
+                    <option value="sqm_desc" {% if filters.sort == 'sqm_desc' %}selected{% endif %}>Nagyobb alapterület elöl</option>
+                </select>
+            </div>
+
+            <button type="submit" class="search-btn">Keresés</button>
+            <a href="{% url 'listings' %}" class="clear-btn">Szűrők törlése</a>
+        </form>
+    </section>
+
+    <p class="results-summary">Találatok száma: <strong>{{ result_count }}</strong></p>
+
+    <div class="property-grid">
+        {% for property in properties %}
+            <div class="property-card">
+                <div class="property-image">
+                    <img src="{{ property.image_source }}" alt="{{ property.title }}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x200?text=Nincs+kep';">
+                    <span class="badge">Eladó</span>
+                </div>
+                <div class="property-details">
+                    <h3>{{ property.title }}</h3>
+                    <p class="location">{{ property.location }}</p>
+                    <p class="price">{{ property.price }} Ft</p>
+                    <div class="info-tags">
+                        <span>{{ property.sq_meter }} m²</span>
+                        <span>{{ property.rooms }} szoba</span>
+                    </div>
+                    <p class="owner-line">Feltöltő: {% if property.owner %}{{ property.owner.username }}{% else %}HomeLak{% endif %}</p>
+                    <a href="{% url 'property_detail' property.pk %}" class="view-btn">Megtekintés</a>
+                </div>
+            </div>
+        {% empty %}
+            <p class="empty-state">Nincs a szűrésnek megfelelő ingatlan. Próbálj meg más feltételeket megadni.</p>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HomeLak{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+    <header>
+        <a href="{% url 'home' %}" class="logo">Home<span>Lak</span></a>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Főoldal</a></li>
+                <li><a href="{% url 'listings' %}">Ingatlanok</a></li>
+
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'create_property' %}">Hirdetés feladása</a></li>
+                    <li><a href="{% url 'profile' %}">Saját fiók ({{ user.username }})</a></li>
+                    <li>
+                        <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-btn">Kijelentkezés</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'login' %}">Belépés</a></li>
+                    <li><a href="{% url 'register' %}" class="btn-reg">Regisztráció</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

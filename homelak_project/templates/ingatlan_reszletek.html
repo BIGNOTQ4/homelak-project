@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}HomeLak - {{ property.title }}{% endblock %}
+
+{% block content %}
+<main class="content-wrapper">
+    <a href="{% url 'listings' %}" class="back-link">← Vissza az ingatlanokhoz</a>
+
+    <section class="detail-hero">
+        <div class="detail-image-wrapper">
+            <img src="{{ property.detail_image_source }}" alt="{{ property.title }}" class="detail-image" onerror="this.onerror=null;this.src='https://via.placeholder.com/1000x600?text=Nincs+kep';">
+            <span class="badge">Eladó</span>
+        </div>
+
+        <div class="detail-summary card">
+            <p class="detail-location">{{ property.location }}</p>
+            <h1>{{ property.title }}</h1>
+            <p class="detail-price">{{ property.price }} Ft</p>
+            <p class="owner-line detail-owner">Feltöltő: {% if property.owner %}{{ property.owner.username }}{% else %}HomeLak{% endif %}</p>
+
+            <div class="detail-stats">
+                <div class="stat-box">
+                    <span class="stat-label">Alapterület</span>
+                    <strong>{{ property.sq_meter }} m²</strong>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Szobák</span>
+                    <strong>{{ property.rooms }} szoba</strong>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Azonosító</span>
+                    <strong>#{{ property.pk }}</strong>
+                </div>
+            </div>
+
+            <div class="detail-actions">
+                {% if user.is_authenticated and property.owner == user %}
+                    <a href="{% url 'edit_property' property.pk %}" class="view-btn">Hirdetés szerkesztése</a>
+                    <a href="{% url 'delete_property' property.pk %}" class="danger-btn">Hirdetés törlése</a>
+                {% elif user.is_authenticated %}
+                    <a href="{% url 'create_property' %}" class="view-btn">Saját hirdetés feladása</a>
+                    <a href="{% url 'profile' %}" class="secondary-btn">Saját fiók</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="view-btn">Belépés a hirdetés feladásához</a>
+                    <a href="{% url 'listings' %}" class="secondary-btn">További ingatlanok</a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <section class="detail-section card description-card">
+        <h2>Leírás</h2>
+        <p>{{ property.description|linebreaks }}</p>
+    </section>
+
+    <section class="detail-section">
+        <h2 class="section-title">Kapcsolódó ajánlatok</h2>
+        <div class="property-grid">
+            {% for related in related_properties %}
+                <div class="property-card">
+                    <div class="property-image">
+                        <img src="{{ related.image_source }}" alt="{{ related.title }}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x200?text=Nincs+kep';">
+                    </div>
+                    <div class="property-details">
+                        <h3>{{ related.title }}</h3>
+                        <p class="location">{{ related.location }}</p>
+                        <p class="price">{{ related.price }} Ft</p>
+                        <div class="info-tags">
+                            <span>{{ related.sq_meter }} m²</span>
+                            <span>{{ related.rooms }} szoba</span>
+                        </div>
+                        <a href="{% url 'property_detail' related.pk %}" class="view-btn">Megtekintés</a>
+                    </div>
+                </div>
+            {% empty %}
+                <p>Még nincs több feltöltött ingatlan az adatbázisban.</p>
+            {% endfor %}
+        </div>
+    </section>
+</main>
+{% endblock %}

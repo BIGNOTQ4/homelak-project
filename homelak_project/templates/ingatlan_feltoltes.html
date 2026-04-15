@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}HomeLak - {{ page_title|default:'Új ingatlan feltöltése' }}{% endblock %}
+
+{% block content %}
+<main class="content-wrapper narrow-content">
+    <section class="form-card card">
+        <div class="form-header-row">
+            <div>
+                <h1>{{ form_title|default:'Hirdetés feladása' }}</h1>
+                <p>
+                    {% if is_edit %}
+                        Itt módosíthatod a saját hirdetésed adatait.
+                    {% else %}
+                        Add meg az ingatlan legfontosabb adatait, és már meg is jelenik a listában.
+                    {% endif %}
+                </p>
+            </div>
+            {% if is_edit and property %}
+                <a href="{% url 'property_detail' property.pk %}" class="secondary-btn compact-btn">Vissza a hirdetéshez</a>
+            {% endif %}
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="property-form">
+            {% csrf_token %}
+
+        {% if is_edit and property %}
+            <div class="current-image-box">
+                <h3>Jelenlegi kép</h3>
+                {% if property.image %}
+                    <img src="{{ property.image.url }}" alt="{{ property.title }}" class="form-preview-image">
+                    <p class="muted-help">Jelenleg feltöltött saját képet használsz.</p>
+                {% elif property.image_url %}
+                    <img src="{{ property.image_url }}" alt="{{ property.title }}" class="form-preview-image" onerror="this.onerror=null;this.src='https://via.placeholder.com/600x350?text=Nincs+kep';">
+                    <p class="muted-help">Jelenleg külső kép URL-t használsz.</p>
+                {% else %}
+                    <p class="muted-help">Ehhez a hirdetéshez még nincs beállított kép.</p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+
+            {% if form.non_field_errors %}
+                <div class="form-errors">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small>{{ field.help_text }}</small>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <p class="field-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <button type="submit" class="view-btn">{{ submit_label|default:'Hirdetés mentése' }}</button>
+                <a href="{% if is_edit and property %}{% url 'property_detail' property.pk %}{% else %}{% url 'profile' %}{% endif %}" class="secondary-btn">Mégse</a>
+            </div>
+        </form>
+    </section>
+</main>
+{% endblock %}

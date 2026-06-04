@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}HomeLak - Üzenetek{% endblock %}
+
+{% block content %}
+<main class="content-wrapper app-page messages-page">
+    <div class="page-heading section-title-row section-title-space-between">
+        <div>
+            <p class="page-kicker">Kapcsolatfelvételek</p>
+            <h1 class="section-title">Beérkezett üzenetek</h1>
+            <p class="page-subtitle">Itt követheted az érdeklődéseket, amelyek a saját hirdetéseidre érkeztek.</p>
+            <p class="results-summary">Üzenetek száma: <strong>{{ received_message_count }}</strong></p>
+        </div>
+        <a href="{% url 'profile' %}" class="secondary-btn compact-btn">Vissza a fiókhoz</a>
+    </div>
+
+    <div class="message-list premium-message-list">
+        {% for message in received_messages %}
+            <article class="card message-card">
+                <div class="message-header">
+                    <div>
+                        <h3>{{ message.property.title }}</h3>
+                        <p class="owner-line">Küldő: {{ message.sender.username }}</p>
+                    </div>
+                    <span class="message-date">{{ message.created_at|date:"Y.m.d. H:i" }}</span>
+                </div>
+                <p class="location">{{ message.property.location }}</p>
+                <div class="message-body">
+                    {{ message.message|linebreaks }}
+                </div>
+                <a href="{% url 'property_detail' message.property.pk %}" class="view-btn message-action">Ingatlan megtekintése</a>
+            </article>
+        {% empty %}
+            <div class="empty-state">
+                <p>Még nincs beérkezett üzeneted.</p>
+                <p class="empty-state-text">Ha valaki érdeklődik a hirdetésed iránt, itt fog megjelenni az üzenete.</p>
+            </div>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}

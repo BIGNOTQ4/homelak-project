@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<main class="form-container">
+    <div class="card">
+        <h2>Bejelentkezés</h2>
+        
+        {% if form.errors %}
+            <p style="color: #e74c3c; text-align: center;">Hibás felhasználónév vagy jelszó!</p>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="input-group">
+                <label for="id_username">Felhasználónév</label>
+                <input type="text" name="username" id="id_username" required>
+            </div>
+            <div class="input-group">
+                <label for="id_password">Jelszó</label>
+                <input type="password" name="password" id="id_password" required>
+            </div>
+            <button type="submit" class="submit-btn">Belépés</button>
+        </form>
+    </div>
+</main>
+{% endblock %}

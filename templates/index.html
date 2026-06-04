@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}HomeLak - Főoldal{% endblock %}
+
+{% block content %}
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-copy">
+                {% if user.is_authenticated %}
+                    <p class="hero-eyebrow">Személyre szabott otthonkeresés</p>
+                    <h1>Üdvözöljük újra, {{ user.username }}!</h1>
+                    <p>Böngésszen a legfrissebb ajánlatok között, vagy kezelje saját hirdetéseit egy prémium, rendezett fiókfelületen.</p>
+                {% else %}
+                    <p class="hero-eyebrow">HomeLak ingatlanplatform</p>
+                    <h1>Prémium otthonkeresés, letisztult felületen.</h1>
+                    <p>Átlátható hirdetések, gyors szűrés, kedvencek és közvetlen kapcsolatfelvétel egy modern ingatlanos élményben.</p>
+                {% endif %}
+                <div class="hero-actions">
+                    <a href="{% url 'listings' %}" class="view-btn">Ingatlanok böngészése</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'create_property' %}" class="secondary-btn">Hirdetés feladása</a>
+                    {% else %}
+                        <a href="{% url 'register' %}" class="secondary-btn">Regisztráció</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="hero-showcase" aria-label="HomeLak kiemelt előnézet">
+                <div class="hero-showcase-card">
+                    <span class="hero-card-label">Kiemelt élmény</span>
+                    <strong>Gyors keresés, galéria, kedvencek</strong>
+                    <p>Modern hirdetéskártyák és részletes adatlapok, amelyek portfóliószinten mutatják be az ingatlanokat.</p>
+                </div>
+                <div class="hero-metrics">
+                    <div>
+                        <strong>3</strong>
+                        <span>friss ajánlat a nyitólapon</span>
+                    </div>
+                    <div>
+                        <strong>360°</strong>
+                        <span>átlátható felhasználói fiók</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="content-wrapper premium-section">
+        <div class="page-heading section-title-row section-title-space-between">
+            <div>
+                <p class="page-kicker">Friss ajánlatok</p>
+                <h2 class="section-title">Legfrissebb ingatlanok</h2>
+                <p class="page-subtitle">A legújabb feltöltések egy helyen, gyors áttekintésre hangolva.</p>
+            </div>
+            <a href="{% url 'listings' %}" class="secondary-btn compact-btn">Összes ingatlan</a>
+        </div>
+
+        <div class="property-grid premium-property-grid">
+            {% for property in latest_properties %}
+                <div class="property-card">
+                    <div class="property-image">
+                        <img src="{{ property.image_source }}" alt="{{ property.title }}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x200?text=Nincs+kep';">
+                        <span class="badge">Eladó</span>
+                    </div>
+                    <div class="property-details">
+                        <h3>{{ property.title }}</h3>
+                        <p class="location">{{ property.location }}</p>
+                        <p class="price">{{ property.price }} Ft</p>
+                        <div class="info-tags">
+                            <span>{{ property.sq_meter }} m²</span>
+                            <span>{{ property.rooms }} szoba</span>
+                        </div>
+                        <p class="owner-line">Feltöltő: {% if property.owner %}{{ property.owner.username }}{% else %}HomeLak{% endif %}</p>
+                        <a href="{% url 'property_detail' property.pk %}" class="view-btn">Megtekintés</a>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty-state">
+                    <p>Még nincs feltöltött ingatlan.</p>
+                    {% if user.is_authenticated %}
+                        <p class="empty-state-text">Töltsd fel az első hirdetést, hogy megjelenjen a főoldalon.</p>
+                        <a href="{% url 'create_property' %}" class="view-btn empty-state-action">Első hirdetés feltöltése</a>
+                    {% else %}
+                        <p class="empty-state-text">Regisztráció után te is feladhatod az első hirdetést.</p>
+                        <a href="{% url 'register' %}" class="view-btn empty-state-action">Regisztráció</a>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}

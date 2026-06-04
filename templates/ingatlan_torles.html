@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}HomeLak - Hirdetés törlése{% endblock %}
+
+{% block content %}
+<main class="content-wrapper narrow-content">
+    <section class="card delete-card">
+        <h1>Hirdetés törlése</h1>
+        <p>Biztosan törölni szeretnéd ezt a hirdetést?</p>
+
+        <div class="delete-summary">
+            <h3>{{ property.title }}</h3>
+            <p><strong>Település:</strong> {{ property.location }}</p>
+            <p><strong>Ár:</strong> {{ property.price }} Ft</p>
+            <p><strong>Szobák:</strong> {{ property.rooms }}</p>
+        </div>
+
+        <p class="delete-warning">A művelet után a hirdetés eltűnik a listából és a saját fiókodból is.</p>
+
+        <form method="post" class="delete-actions">
+            {% csrf_token %}
+            <button type="submit" class="danger-btn">Igen, törlöm</button>
+            <a href="{% url 'property_detail' property.pk %}" class="secondary-btn">Mégse</a>
+        </form>
+    </section>
+</main>
+{% endblock %}

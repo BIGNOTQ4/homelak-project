@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}HomeLak - Kedvencek{% endblock %}
+
+{% block content %}
+<main class="content-wrapper app-page favorites-page">
+    <div class="page-heading section-title-row section-title-space-between">
+        <div>
+            <p class="page-kicker">Mentett ajánlatok</p>
+            <h1 class="section-title">Kedvenc ingatlanok</h1>
+            <p class="page-subtitle">Gyűjtsd egy helyre azokat a hirdetéseket, amelyeket később is visszanéznél.</p>
+            <p class="results-summary">Mentett hirdetések száma: <strong>{{ favorite_count }}</strong></p>
+        </div>
+        <a href="{% url 'listings' %}" class="secondary-btn compact-btn">Ingatlanok böngészése</a>
+    </div>
+
+    <div class="property-grid premium-property-grid">
+        {% for property in properties %}
+            <div class="property-card">
+                <div class="property-image">
+                    <img src="{{ property.image_source }}" alt="{{ property.title }}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x200?text=Nincs+kep';">
+                    <span class="badge favorite-badge">Kedvenc</span>
+                </div>
+                <div class="property-details">
+                    <h3>{{ property.title }}</h3>
+                    <p class="location">{{ property.location }}</p>
+                    <p class="price">{{ property.price }} Ft</p>
+                    <div class="info-tags">
+                        <span>{{ property.sq_meter }} m²</span>
+                        <span>{{ property.rooms }} szoba</span>
+                    </div>
+                    <p class="owner-line">Feltöltő: {% if property.owner %}{{ property.owner.username }}{% else %}HomeLak{% endif %}</p>
+                    <div class="card-actions-stack">
+                        <a href="{% url 'property_detail' property.pk %}" class="view-btn">Megtekintés</a>
+                        <form method="post" action="{% url 'toggle_favorite' property.pk %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <button type="submit" class="favorite-btn active">Kedvenc eltávolítása</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="empty-state">
+                <p>Még nincs kedvenc ingatlanod.</p>
+                <p class="empty-state-text">Böngéssz az elérhető hirdetések között, és mentsd el, ami tetszik.</p>
+                <a href="{% url 'listings' %}" class="view-btn empty-state-action">Ingatlanok böngészése</a>
+            </div>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}

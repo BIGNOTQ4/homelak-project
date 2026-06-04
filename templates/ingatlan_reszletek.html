@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}HomeLak - {{ property.title }}{% endblock %}
+
+{% block content %}
+<main class="content-wrapper detail-page">
+    <a href="{% url 'listings' %}" class="back-link">← Vissza az ingatlanokhoz</a>
+
+    <section class="detail-hero premium-detail-hero">
+        <div class="detail-image-wrapper">
+            <img src="{{ property.detail_image_source }}" alt="{{ property.title }}" class="detail-image" onerror="this.onerror=null;this.src='https://via.placeholder.com/1000x600?text=Nincs+kep';">
+            <span class="badge">Eladó</span>
+        </div>
+
+        <div class="detail-summary card">
+            <p class="page-kicker">Ingatlan adatlap</p>
+            <p class="detail-location">{{ property.location }}</p>
+            <h1>{{ property.title }}</h1>
+            <p class="detail-price">{{ property.price }} Ft</p>
+            <p class="owner-line detail-owner">Feltöltő: {% if property.owner %}{{ property.owner.username }}{% else %}HomeLak{% endif %}</p>
+
+            <div class="detail-stats">
+                <div class="stat-box">
+                    <span class="stat-label">Alapterület</span>
+                    <strong>{{ property.sq_meter }} m²</strong>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Szobák</span>
+                    <strong>{{ property.rooms }} szoba</strong>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Azonosító</span>
+                    <strong>#{{ property.pk }}</strong>
+                </div>
+            </div>
+
+            <div class="detail-actions">
+                {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'toggle_favorite' property.pk %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <button type="submit" class="{% if is_favorite %}favorite-btn active{% else %}favorite-btn{% endif %}">
+                            {% if is_favorite %}Kedvenc eltávolítása{% else %}Kedvencekhez adás{% endif %}
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" class="favorite-btn">Belépés a kedvencekhez</a>
+                {% endif %}
+
+                {% if user.is_authenticated and property.owner == user %}
+                    <a href="{% url 'edit_property' property.pk %}" class="view-btn">Hirdetés szerkesztése</a>
+                    <a href="{% url 'delete_property' property.pk %}" class="danger-btn">Hirdetés törlése</a>
+                {% elif user.is_authenticated %}
+                    <a href="{% url 'create_property' %}" class="view-btn">Saját hirdetés feladása</a>
+                    <a href="{% url 'profile' %}" class="secondary-btn">Saját fiók</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="view-btn">Belépés a hirdetés feladásához</a>
+                    <a href="{% url 'listings' %}" class="secondary-btn">További ingatlanok</a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <section class="detail-section card description-card elevated-section">
+        <h2>Leírás</h2>
+        <p>{{ property.description|linebreaks }}</p>
+    </section>
+
+    {% if gallery_images %}
+        <section class="detail-section card gallery-card elevated-section">
+            <div class="section-title-row section-title-space-between">
+                <h2>Galéria</h2>
+                <p class="results-summary">{{ gallery_images|length }} kép</p>
+            </div>
+            <div class="detail-gallery-grid">
+                {% for gallery_image in gallery_images %}
+                    <a href="{{ gallery_image.image.url }}" class="gallery-item" target="_blank" rel="noopener">
+                        <img src="{{ gallery_image.image.url }}" alt="{{ property.title }} galériakép">
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    <section class="detail-section card contact-card elevated-section">
+        <h2>Kapcsolatfelvétel</h2>
+        {% if can_contact %}
+            <p class="muted-help">Az üzenetedet közvetlenül a hirdetés feltöltője kapja meg.</p>
+            <form method="post" class="contact-form">
+                {% csrf_token %}
+                {% for field in contact_form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% for error in field.errors %}
+                            <p class="field-error">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="view-btn">Üzenet küldése</button>
+            </form>
+        {% elif user.is_authenticated and property.owner == user %}
+            <p class="muted-help">Ez a saját hirdetésed, ezért magadnak nem küldhetsz üzenetet.</p>
+        {% elif user.is_authenticated %}
+            <p class="muted-help">Ehhez a hirdetéshez jelenleg nincs elérhető feltöltő.</p>
+        {% else %}
+            <p class="muted-help">Üzenetküldéshez először jelentkezz be.</p>
+            <a href="{% url 'login' %}" class="view-btn contact-login-btn">Belépés az üzenetküldéshez</a>
+        {% endif %}
+    </section>
+
+    <section class="detail-section">
+        <h2 class="section-title">Kapcsolódó ajánlatok</h2>
+        <div class="property-grid">
+            {% for related in related_properties %}
+                <div class="property-card">
+                    <div class="property-image">
+                        <img src="{{ related.image_source }}" alt="{{ related.title }}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x200?text=Nincs+kep';">
+                    </div>
+                    <div class="property-details">
+                        <h3>{{ related.title }}</h3>
+                        <p class="location">{{ related.location }}</p>
+                        <p class="price">{{ related.price }} Ft</p>
+                        <div class="info-tags">
+                            <span>{{ related.sq_meter }} m²</span>
+                            <span>{{ related.rooms }} szoba</span>
+                        </div>
+                        <a href="{% url 'property_detail' related.pk %}" class="view-btn">Megtekintés</a>
+                    </div>
+                </div>
+            {% empty %}
+                <p>Még nincs több feltöltött ingatlan az adatbázisban.</p>
+            {% endfor %}
+        </div>
+    </section>
+</main>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<main class="form-container">
+    <div class="card">
+        <h2>Regisztráció</h2>
+        <form method="POST">
+            {% csrf_token %}
+            
+            {{ form.as_p }}
+
+            <button type="submit" class="submit-btn" style="margin-top: 20px;">Fiók létrehozása</button>
+        </form>
+        
+        <p style="margin-top: 15px; font-size: 0.8rem; text-align: center;">
+            Már van fiókja? <a href="{% url 'login' %}" style="color: #3498db; text-decoration: none;">Jelentkezzen be!</a>
+        </p>
+    </div>
+</main>
+
+<style>
+    /* Egy kis gyors javítás, hogy a Django form is jól nézzen ki */
+    .card p { margin-bottom: 15px; }
+    .card input { 
+        width: 100%; 
+        padding: 10px; 
+        border: 1px solid #ddd; 
+        border-radius: 5px; 
+    }
+    .helptext { display: block; font-size: 0.7rem; color: #7f8c8d; }
+</style>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}HomeLak - Saját fiók{% endblock %}
+
+{% block content %}
+<main class="content-wrapper app-page account-page">
+    <section class="profile-header">
+        <p class="page-kicker">Felhasználói dashboard</p>
+        <h1>Üdvözöljük, {{ user.username|default:"Felhasználó" }}!</h1>
+        <p>Itt kezelheti adatait, hirdetéseit, kedvenceit és beérkezett üzeneteit.</p>
+    </section>
+
+    <section class="dashboard-grid premium-dashboard-grid">
+        <article class="dashboard-card">
+            <span class="dashboard-label">Saját hirdetések</span>
+            <strong>{{ user_property_count }}</strong>
+            <p>Aktív feltöltött ingatlan</p>
+        </article>
+        <article class="dashboard-card">
+            <span class="dashboard-label">Kedvencek</span>
+            <strong>{{ favorite_count }}</strong>
+            <p>Mentett hirdetés</p>
+        </article>
+        <article class="dashboard-card">
+            <span class="dashboard-label">Üzenetek</span>
+            <strong>{{ received_message_count }}</strong>
+            <p>Beérkezett érdeklődés</p>
+        </article>
+        <article class="dashboard-card">
+            <span class="dashboard-label">Galériaképek</span>
+            <strong>{{ gallery_image_count }}</strong>
+            <p>Összes saját hirdetéshez tartozó galériakép</p>
+        </article>
+    </section>
+
+    <div class="account-layout">
+        <div class="card profile-info profile-card-wide">
+            <h3>Személyes adatok</h3>
+            <p><strong>Felhasználónév:</strong> {{ user.username }}</p>
+            <p><strong>Név:</strong> {{ user.get_full_name|default:"Nincs megadva" }}</p>
+            <p><strong>E-mail:</strong> {{ user.email|default:"Nincs megadva" }}</p>
+            <p><strong>Tagság kezdete:</strong> {{ user.date_joined|date:"Y.m.d." }}</p>
+            <p><strong>Feltöltött hirdetések:</strong> {{ user_property_count }} db</p>
+            <p><strong>Kedvenc ingatlanok:</strong> {{ favorite_count }} db</p>
+            <p><strong>Beérkezett üzenetek:</strong> {{ received_message_count }} db</p>
+            <div class="profile-actions">
+                <a href="{% url 'create_property' %}" class="view-btn">Új ingatlan feltöltése</a>
+                <a href="{% url 'favorites' %}" class="secondary-btn">Kedvenceim megnyitása</a>
+                <a href="{% url 'inbox' %}" class="secondary-btn">Beérkezett üzenetek</a>
+            </div>
+        </div>
+
+        <div class="saved-items full-width-section">
+            <section class="dashboard-panel">
+                <div class="section-title-row section-title-space-between">
+                    <h3>Legutóbbi aktivitás</h3>
+                    <a href="{% url 'inbox' %}" class="secondary-btn compact-btn">Üzenetek megnyitása</a>
+                </div>
+
+                <div class="dashboard-columns">
+                    <div>
+                        <h4>Legutóbbi hirdetések</h4>
+                        <div class="compact-list">
+                            {% for property in recent_properties %}
+                                <a href="{% url 'property_detail' property.pk %}" class="compact-list-item">
+                                    <span>{{ property.title }}</span>
+                                    <strong>{{ property.price }} Ft</strong>
+                                </a>
+                            {% empty %}
+                                <p class="muted-help">Még nincs saját hirdetésed.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4>Legutóbbi üzenetek</h4>
+                        <div class="compact-list">
+                            {% for message in recent_messages %}
+                                <a href="{% url 'property_detail' message.property.pk %}" class="compact-list-item">
+                                    <span>{{ message.sender.username }} - {{ message.property.title }}</span>
+                                    <strong>{{ message.created_at|date:"Y.m.d." }}</strong>
+                                </a>
+                            {% empty %}
+                                <p class="muted-help">Még nincs beérkezett üzeneted.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="section-title-row">
+                <h3>Saját hirdetéseim</h3>
+                <a href="{% url 'create_property' %}" class="secondary-btn compact-btn">+ Új hirdetés</a>
+            </div>
+
+            <div class="property-grid profile-property-grid">
+                {% for property in user_properties %}
+                    <div class="property-card">
+                        <div class="property-image">
+                            <img src="{{ property.image_source }}" alt="{{ property.title }}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x200?text=Nincs+kep';">
+                            <span class="badge">Saját</span>
+                        </div>
+                        <div class="property-details">
+                            <h3>{{ property.title }}</h3>
+                            <p class="location">{{ property.location }}</p>
+                            <p class="price">{{ property.price }} Ft</p>
+                            <div class="info-tags">
+                                <span>{{ property.sq_meter }} m²</span>
+                                <span>{{ property.rooms }} szoba</span>
+                            </div>
+                            <div class="card-actions-stack">
+                                <a href="{% url 'property_detail' property.pk %}" class="view-btn">Megtekintés</a>
+                                <div class="inline-action-row">
+                                    <a href="{% url 'edit_property' property.pk %}" class="secondary-btn compact-btn action-grow">Szerkesztés</a>
+                                    <a href="{% url 'delete_property' property.pk %}" class="danger-btn compact-btn action-grow">Törlés</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="empty-state">
+                        <p>Még nincs feltöltött hirdetésed.</p>
+                        <p class="empty-state-text">Kezdd el most az első ingatlanod feladásával.</p>
+                        <a href="{% url 'create_property' %}" class="view-btn empty-state-action">Első hirdetés feltöltése</a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

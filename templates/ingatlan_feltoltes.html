@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}HomeLak - {{ page_title|default:'Új ingatlan feltöltése' }}{% endblock %}
+
+{% block content %}
+<main class="content-wrapper upload-page">
+    <div class="page-heading upload-heading">
+        <div>
+            <p class="page-kicker">Hirdetéskezelés</p>
+            <h1>{{ form_title|default:'Hirdetés feladása' }}</h1>
+            <p class="page-subtitle">
+                {% if is_edit %}
+                    Frissítsd a hirdetés adatait, képeit és galériáját egy rendezett űrlapon.
+                {% else %}
+                    Add meg az ingatlan legfontosabb adatait, és építs hozzá látványos képes bemutatót.
+                {% endif %}
+            </p>
+        </div>
+        {% if is_edit and property %}
+            <a href="{% url 'property_detail' property.pk %}" class="secondary-btn compact-btn">Vissza a hirdetéshez</a>
+        {% endif %}
+    </div>
+
+    <section class="form-card card">
+        <div class="form-header-row">
+            <div>
+                <h2>Ingatlan adatai</h2>
+                <p>Töltsd ki a mezőket átláthatóan, hogy a hirdetés könnyen böngészhető legyen.</p>
+            </div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="property-form">
+            {% csrf_token %}
+
+        {% if is_edit and property %}
+            <div class="current-image-box media-panel">
+                <h3>Jelenlegi kép</h3>
+                {% if property.image %}
+                    <img src="{{ property.image.url }}" alt="{{ property.title }}" class="form-preview-image">
+                    <p class="muted-help">Jelenleg feltöltött saját képet használsz.</p>
+                {% elif property.image_url %}
+                    <img src="{{ property.image_url }}" alt="{{ property.title }}" class="form-preview-image" onerror="this.onerror=null;this.src='https://via.placeholder.com/600x350?text=Nincs+kep';">
+                    <p class="muted-help">Jelenleg külső kép URL-t használsz.</p>
+                {% else %}
+                    <p class="muted-help">Ehhez a hirdetéshez még nincs beállított kép.</p>
+                {% endif %}
+            </div>
+
+            <div class="current-image-box media-panel">
+                <h3>Galériaképek</h3>
+                {% if gallery_images %}
+                    <div class="form-gallery-grid">
+                        {% for gallery_image in gallery_images %}
+                            <label class="gallery-delete-card">
+                                <img src="{{ gallery_image.image.url }}" alt="{{ property.title }} galériakép" class="form-preview-image">
+                                <span>
+                                    <input type="checkbox" name="delete_gallery_images" value="{{ gallery_image.pk }}">
+                                    Kép törlése
+                                </span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    <p class="muted-help">Jelöld be azokat a galériaképeket, amelyeket mentéskor törölni szeretnél.</p>
+                {% else %}
+                    <p class="muted-help">Ehhez a hirdetéshez még nincs galériakép feltöltve.</p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+
+            {% if form.non_field_errors %}
+                <div class="form-errors">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small>{{ field.help_text }}</small>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <p class="field-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <button type="submit" class="view-btn">{{ submit_label|default:'Hirdetés mentése' }}</button>
+                <a href="{% if is_edit and property %}{% url 'property_detail' property.pk %}{% else %}{% url 'profile' %}{% endif %}" class="secondary-btn">Mégse</a>
+            </div>
+        </form>
+    </section>
+</main>
+{% endblock %}

@@ -4,8 +4,11 @@ import shutil
 import tempfile
 
 from django.contrib.auth.models import User
+from django.core.management import call_command
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.conf import settings
+from django.template import Context, Template
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from PIL import Image
@@ -191,6 +194,116 @@ class PropertyImageCleanupTests(TestCase):
 
                 with self.assertRaises(ValidationError):
                     property_obj.full_clean()
+
+
+class PropertyImageSourceTests(TestCase):
+    def setUp(self):
+        self.media_root = tempfile.mkdtemp()
+        self.override = override_settings(MEDIA_ROOT=self.media_root)
+        self.override.enable()
+
+    def tearDown(self):
+        self.override.disable()
+        shutil.rmtree(self.media_root, ignore_errors=True)
+
+    def test_display_image_url_uses_first_gallery_image_when_main_image_and_url_are_missing(self):
+        property_obj = create_property(image_url='')
+        gallery_image = PropertyImage.objects.create(
+            property=property_obj,
+            image=test_image_file(name='gallery-fallback.jpg', image_format='JPEG', content_type='image/jpeg'),
+        )
+
+        self.assertEqual(property_obj.display_image_url, gallery_image.image.url)
+
+    def test_display_image_url_uses_image_url_before_gallery_image(self):
+        property_obj = create_property(image_url='/static/images/demo_properties/budapest-premium-lakas.jpg')
+        PropertyImage.objects.create(
+            property=property_obj,
+            image=test_image_file(name='gallery-fallback.jpg', image_format='JPEG', content_type='image/jpeg'),
+        )
+
+        self.assertEqual(property_obj.display_image_url, '/static/images/demo_properties/budapest-premium-lakas.jpg')
+
+    def test_display_image_url_uses_local_placeholder_as_final_fallback(self):
+        property_obj = create_property(image_url='')
+        property_obj.image.name = 'properties/missing-file.jpg'
+
+        self.assertEqual(property_obj.display_image_url, f'{settings.STATIC_URL.rstrip("/")}/images/property-placeholder.svg')
+        self.assertTrue(property_obj.uses_placeholder_image)
+
+
+class SeedDemoPropertiesCommandTests(TestCase):
+    def setUp(self):
+        self.media_root = tempfile.mkdtemp()
+        self.override = override_settings(MEDIA_ROOT=self.media_root)
+        self.override.enable()
+
+    def tearDown(self):
+        self.override.disable()
+        shutil.rmtree(self.media_root, ignore_errors=True)
+
+    def test_seed_command_creates_realistic_properties_with_images(self):
+        call_command('seed_demo_properties', reset=True, verbosity=0)
+
+        properties = Property.objects.filter(owner__username='homelak_demo')
+
+        self.assertEqual(properties.count(), 10)
+        self.assertTrue(all(property_obj.price >= 30000000 for property_obj in properties))
+        self.assertTrue({'Budapest', 'Debrecen', 'Győr', 'Szeged', 'Pécs'}.issubset(
+            set(properties.values_list('location', flat=True))
+        ))
+        self.assertTrue(all(property_obj.image_url for property_obj in properties))
+        self.assertTrue(all('/static/images/demo_properties/' in property_obj.image_url for property_obj in properties))
+        self.assertFalse(any('placeholder' in property_obj.display_image_url for property_obj in properties))
+        self.assertGreaterEqual(len({property_obj.display_image_url for property_obj in properties}), 8)
+        self.assertFalse(any(property_obj.image for property_obj in properties))
+        self.assertEqual(PropertyImage.objects.filter(property__in=properties).count(), 0)
+
+    def test_seed_command_repairs_legacy_homelak_sample_image(self):
+        legacy_property = create_property(
+            owner=None,
+            title='Kertes sorházi lakás',
+            location='Győr',
+            price=68900000,
+            image_url='https://static.ezermester.hu/Ezermester-print/2021/12/sorhazak/1.jpg',
+        )
+
+        call_command('seed_demo_properties', reset=True, verbosity=0)
+
+        legacy_property.refresh_from_db()
+        self.assertTrue(Property.objects.filter(pk=legacy_property.pk).exists())
+        self.assertEqual(legacy_property.image_url, '/static/images/demo_properties/gyor-csaladi-haz.jpg')
+        self.assertEqual(legacy_property.display_image_url, '/static/images/demo_properties/gyor-csaladi-haz.jpg')
+        self.assertFalse(legacy_property.uses_placeholder_image)
+
+    def test_seed_command_repairs_legacy_homelak_sample_detail_image(self):
+        legacy_property = create_property(
+            owner=None,
+            title='Családi ház kerttel',
+            location='Debrecen',
+            price=74900000,
+            image_url='',
+        )
+
+        call_command('seed_demo_properties', reset=True, verbosity=0)
+        legacy_property.refresh_from_db()
+        response = self.client.get(reverse('property_detail', args=[legacy_property.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            'src="/static/images/demo_properties/debrecen-csaladi-otthon.jpg"',
+        )
+        self.assertNotContains(response, 'src="/static/images/property-placeholder.svg"')
+
+
+class TemplateFilterTests(TestCase):
+    def test_format_price_uses_hungarian_grouping(self):
+        template = Template('{% load property_extras %}{{ price|format_price }} Ft')
+
+        rendered = template.render(Context({'price': 41900000}))
+
+        self.assertEqual(rendered, '41 900 000 Ft')
 
 
 class PropertyPermissionTests(TestCase):

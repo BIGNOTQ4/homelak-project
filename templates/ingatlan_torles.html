@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load property_extras %}
 
 {% block title %}HomeLak - Hirdetés törlése{% endblock %}
 
@@ -11,7 +12,7 @@
         <div class="delete-summary">
             <h3>{{ property.title }}</h3>
             <p><strong>Település:</strong> {{ property.location }}</p>
-            <p><strong>Ár:</strong> {{ property.price }} Ft</p>
+            <p><strong>Ár:</strong> {{ property.price|format_price }} Ft</p>
             <p><strong>Szobák:</strong> {{ property.rooms }}</p>
         </div>
 

@@ -39,7 +39,7 @@
                     <img src="{{ property.image.url }}" alt="{{ property.title }}" class="form-preview-image">
                     <p class="muted-help">Jelenleg feltöltött saját képet használsz.</p>
                 {% elif property.image_url %}
-                    <img src="{{ property.image_url }}" alt="{{ property.title }}" class="form-preview-image" onerror="this.onerror=null;this.src='https://via.placeholder.com/600x350?text=Nincs+kep';">
+                    <img src="{{ property.image_url }}" alt="{{ property.title }}" class="form-preview-image" onerror="this.onerror=null;this.src='{{ property.placeholder_image_source }}';">
                     <p class="muted-help">Jelenleg külső kép URL-t használsz.</p>
                 {% else %}
                     <p class="muted-help">Ehhez a hirdetéshez még nincs beállított kép.</p>
@@ -52,7 +52,7 @@
                     <div class="form-gallery-grid">
                         {% for gallery_image in gallery_images %}
                             <label class="gallery-delete-card">
-                                <img src="{{ gallery_image.image.url }}" alt="{{ property.title }} galériakép" class="form-preview-image">
+                                <img src="{{ gallery_image.image.url }}" alt="{{ property.title }} galériakép" class="form-preview-image" onerror="this.onerror=null;this.src='{{ property.placeholder_image_source }}';">
                                 <span>
                                     <input type="checkbox" name="delete_gallery_images" value="{{ gallery_image.pk }}">
                                     Kép törlése

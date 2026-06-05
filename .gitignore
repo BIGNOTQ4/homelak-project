@@ -6,3 +6,9 @@ db.sqlite3
 .DS_Store
 media/
 staticfiles/
+
+# Duplicate nested project folders
+/homelak_project/
+/homelak-project/
+db_backup_before_seed.sqlite3
+*.sqlite3

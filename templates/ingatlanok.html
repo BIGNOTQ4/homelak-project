@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load property_extras %}
 
 {% block content %}
 <main class="content-wrapper app-page listings-page">
@@ -62,13 +63,13 @@
         {% for property in properties %}
             <div class="property-card">
                 <div class="property-image">
-                    <img src="{{ property.image_source }}" alt="{{ property.title }}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x200?text=Nincs+kep';">
+                    <img src="{{ property.display_image_url }}" alt="{{ property.title }}" onerror="this.onerror=null;this.src='{{ property.placeholder_image_source }}';">
                     <span class="badge">Eladó</span>
                 </div>
                 <div class="property-details">
                     <h3>{{ property.title }}</h3>
                     <p class="location">{{ property.location }}</p>
-                    <p class="price">{{ property.price }} Ft</p>
+                    <p class="price">{{ property.price|format_price }} Ft</p>
                     <div class="info-tags">
                         <span>{{ property.sq_meter }} m²</span>
                         <span>{{ property.rooms }} szoba</span>

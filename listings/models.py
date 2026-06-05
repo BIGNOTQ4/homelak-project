@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.contrib.staticfiles import finders
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -46,20 +48,88 @@ class Property(models.Model):
         ]
 
     @property
+    def placeholder_image_source(self):
+        return f'{settings.STATIC_URL.rstrip("/")}/images/property-placeholder.svg'
+
+    def is_placeholder_url(self, image_url):
+        if not image_url:
+            return True
+
+        normalized_url = image_url.strip().lower()
+        placeholder_markers = (
+            'via.placeholder.com',
+            'property-placeholder.svg',
+            'text=nincs',
+            'nincs+kep',
+            'nincs-kep',
+            'placeholder',
+        )
+        return any(marker in normalized_url for marker in placeholder_markers)
+
+    def _uploaded_image_url(self, image_field):
+        if not image_field or not image_field.name:
+            return None
+
+        try:
+            if image_field.storage.exists(image_field.name):
+                return image_field.url
+        except (OSError, ValueError):
+            return None
+
+        return None
+
+    def _static_image_exists(self, image_url):
+        static_url = settings.STATIC_URL.rstrip('/') + '/'
+        if not image_url.startswith(static_url):
+            return True
+
+        static_path = image_url[len(static_url):]
+        return bool(finders.find(static_path))
+
+    def _valid_image_url(self):
+        if not self.image_url or self.is_placeholder_url(self.image_url):
+            return None
+
+        if not self._static_image_exists(self.image_url):
+            return None
+
+        return self.image_url
+
+    @property
+    def first_gallery_image_source(self):
+        for gallery_image in self.gallery_images.all():
+            image_url = self._uploaded_image_url(gallery_image.image)
+            if image_url:
+                return image_url
+        return None
+
+    @property
+    def display_image_url(self):
+        uploaded_image_url = self._uploaded_image_url(self.image)
+        if uploaded_image_url:
+            return uploaded_image_url
+
+        image_url = self._valid_image_url()
+        if image_url:
+            return image_url
+
+        gallery_image_url = self.first_gallery_image_source
+        if gallery_image_url:
+            return gallery_image_url
+
+        return self.placeholder_image_source
+
+    @property
+    def uses_placeholder_image(self):
+        return self.display_image_url == self.placeholder_image_source
+
+    @property
     def image_source(self):
-        if self.image:
-            return self.image.url
-        if self.image_url:
-            return self.image_url
-        return 'https://via.placeholder.com/300x200?text=Nincs+kep'
+        return self.display_image_url
 
     @property
     def detail_image_source(self):
-        if self.image:
-            return self.image.url
-        if self.image_url:
-            return self.image_url
-        return 'https://via.placeholder.com/1000x600?text=Nincs+kep'
+        return self.display_image_url
 
     def __str__(self):
         return f'{self.title} - {self.location}'

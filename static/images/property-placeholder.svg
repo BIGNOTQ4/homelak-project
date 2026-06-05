@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-label="HomeLak placeholder ingatlankep">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff8f1"/>
+      <stop offset="1" stop-color="#f2f2f2"/>
+    </linearGradient>
+    <linearGradient id="window" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#dfe8ee"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <circle cx="960" cy="130" r="145" fill="#ff385c" opacity="0.1"/>
+  <circle cx="210" cy="760" r="190" fill="#111111" opacity="0.05"/>
+  <g transform="translate(250 195)">
+    <rect x="80" y="250" width="540" height="330" rx="34" fill="#ffffff" stroke="#e6e6e6" stroke-width="8"/>
+    <path d="M45 285 350 55 655 285" fill="none" stroke="#1f1f1f" stroke-width="38" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="170" y="345" width="145" height="235" rx="18" fill="#ff385c" opacity="0.88"/>
+    <rect x="375" y="342" width="150" height="118" rx="18" fill="url(#window)" stroke="#e6e6e6" stroke-width="8"/>
+    <line x1="450" y1="342" x2="450" y2="460" stroke="#e6e6e6" stroke-width="8"/>
+    <line x1="375" y1="401" x2="525" y2="401" stroke="#e6e6e6" stroke-width="8"/>
+  </g>
+  <text x="600" y="815" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="42" font-weight="700" fill="#1f1f1f">HomeLak ingatlan</text>
+  <text x="600" y="862" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="24" fill="#6a6a6a">Kep feltoltese folyamatban</text>
+</svg>

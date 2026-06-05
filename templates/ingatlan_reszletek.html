@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load property_extras %}
 
 {% block title %}HomeLak - {{ property.title }}{% endblock %}
 
@@ -8,7 +9,7 @@
 
     <section class="detail-hero premium-detail-hero">
         <div class="detail-image-wrapper">
-            <img src="{{ property.detail_image_source }}" alt="{{ property.title }}" class="detail-image" onerror="this.onerror=null;this.src='https://via.placeholder.com/1000x600?text=Nincs+kep';">
+            <img src="{{ property.display_image_url }}" alt="{{ property.title }}" class="detail-image" onerror="this.onerror=null;this.src='{{ property.placeholder_image_source }}';">
             <span class="badge">Eladó</span>
         </div>
 
@@ -16,7 +17,7 @@
             <p class="page-kicker">Ingatlan adatlap</p>
             <p class="detail-location">{{ property.location }}</p>
             <h1>{{ property.title }}</h1>
-            <p class="detail-price">{{ property.price }} Ft</p>
+            <p class="detail-price">{{ property.price|format_price }} Ft</p>
             <p class="owner-line detail-owner">Feltöltő: {% if property.owner %}{{ property.owner.username }}{% else %}HomeLak{% endif %}</p>
 
             <div class="detail-stats">
@@ -75,7 +76,7 @@
             <div class="detail-gallery-grid">
                 {% for gallery_image in gallery_images %}
                     <a href="{{ gallery_image.image.url }}" class="gallery-item" target="_blank" rel="noopener">
-                        <img src="{{ gallery_image.image.url }}" alt="{{ property.title }} galériakép">
+                        <img src="{{ gallery_image.image.url }}" alt="{{ property.title }} galériakép" onerror="this.onerror=null;this.src='{{ property.placeholder_image_source }}';">
                     </a>
                 {% endfor %}
             </div>
@@ -115,12 +116,12 @@
             {% for related in related_properties %}
                 <div class="property-card">
                     <div class="property-image">
-                        <img src="{{ related.image_source }}" alt="{{ related.title }}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x200?text=Nincs+kep';">
+                        <img src="{{ related.display_image_url }}" alt="{{ related.title }}" onerror="this.onerror=null;this.src='{{ related.placeholder_image_source }}';">
                     </div>
                     <div class="property-details">
                         <h3>{{ related.title }}</h3>
                         <p class="location">{{ related.location }}</p>
-                        <p class="price">{{ related.price }} Ft</p>
+                        <p class="price">{{ related.price|format_price }} Ft</p>
                         <div class="info-tags">
                             <span>{{ related.sq_meter }} m²</span>
                             <span>{{ related.rooms }} szoba</span>

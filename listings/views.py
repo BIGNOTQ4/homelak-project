@@ -11,12 +11,12 @@ from .models import ContactMessage, Favorite, Property, PropertyImage
 
 
 def home(request):
-    latest_properties = Property.objects.order_by('-created_at')[:3]
+    latest_properties = Property.objects.prefetch_related('gallery_images').order_by('-created_at')[:3]
     return render(request, 'index.html', {'latest_properties': latest_properties})
 
 
 def listings(request):
-    properties = Property.objects.select_related('owner').all()
+    properties = Property.objects.select_related('owner').prefetch_related('gallery_images').all()
 
     location = request.GET.get('location', '').strip()
     min_price = request.GET.get('min_price', '').strip()
@@ -75,8 +75,15 @@ def listings(request):
 
 
 def property_detail(request, pk):
-    property_obj = get_object_or_404(Property.objects.select_related('owner'), pk=pk)
-    related_properties = Property.objects.exclude(pk=property_obj.pk).order_by('-created_at')[:3]
+    property_obj = get_object_or_404(
+        Property.objects.select_related('owner').prefetch_related('gallery_images'),
+        pk=pk,
+    )
+    related_properties = (
+        Property.objects.prefetch_related('gallery_images')
+        .exclude(pk=property_obj.pk)
+        .order_by('-created_at')[:3]
+    )
     gallery_images = property_obj.gallery_images.all()
     is_favorite = False
     can_contact = (
@@ -137,7 +144,11 @@ def register(request):
 
 @login_required
 def profile(request):
-    user_properties = Property.objects.filter(owner=request.user).order_by('-created_at', '-pk')
+    user_properties = (
+        Property.objects.filter(owner=request.user)
+        .prefetch_related('gallery_images')
+        .order_by('-created_at', '-pk')
+    )
     favorite_count = Favorite.objects.filter(user=request.user).count()
     received_messages = (
         ContactMessage.objects.filter(recipient=request.user)
@@ -181,6 +192,7 @@ def favorites(request):
     favorite_properties = (
         Property.objects.filter(favorited_by__user=request.user)
         .select_related('owner')
+        .prefetch_related('gallery_images')
         .order_by('-favorited_by__created_at')
     )
     favorite_property_ids = set(favorite_properties.values_list('pk', flat=True))
